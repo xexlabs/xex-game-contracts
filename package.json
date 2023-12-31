@@ -1,6 +1,6 @@
 {
   "name": "xex-game-contracts",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
     "hardhat": "^2.19.4"
   },
   "devDependencies": {
