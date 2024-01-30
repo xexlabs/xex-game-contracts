@@ -1,17 +1,141 @@
-Overview: This document outlines the contracts required for the XEX in-game rewards.
+# Network & Contracts Overview
 
-Contract Flow: The user initiates a contract call before playing the game. This contract call creates a single XEX mint with a variable term date and requires the user to pay for gas. The contract mints XEX associated with the wallet and waits for the game's result to allow the user to claim. The potential results:
+-   Network: Goerli
+-   Game address: 0xac1fA63d403Ca8495118Ad8430cB24ea43057fc2
+-   NFT address: 0xb6c84B7b555cE1f799cE6e82D9BcF28a699597C9
+-   Reward Token address: 0xE62a817704088493EF68a8C894040a44B79953D0
 
+# Overview About Contracts Usage
 
-User Completes the Game Successfully
-User Loses the Game
-Character Dies
-The time limit is reached
+The Game contract is designed to manage in-game rewards for players.
 
-Success: If the user completes the game successfully, they can claim their initial XEX mint after their term date is reached, PLUS additional XEX distributed via a RewardsPool contract. This additional amount of XEX is an adjustable number after deployment that is given per completion for any user. This amount of XEX is given to their user using the ‘Claim’ contract built into XEX minting and is paid by the user.
+t allows players to start a game session, end it based on the game's outcome, and claim rewards.
 
-Failure: If the user fails to complete the game by dying OR by reaching the time limit, they can claim 20% of their initial XEX mint. This percentage should be adjustable after deployment. The Remaining percent of their initial XEX mint (80%) should be sent to the RewardsPool contract. This amount of XEX is given to their user, and the XEX is sent to the RewardsPool, using the ‘Claim’ contract built into XEX minting, and is paid by the user.
+Below is a guide on how to interact with the Game contract, including the available functions (ABI), their parameters, and the data structures they return.
 
-Example #1: The user begins a dungeon by paying gas for an XEX mint with a 1-day term date. They complete the dungeon in 5 minutes. The contract allows the user to claim their XEX mint with additional rewards from RewardsPool in a single transaction, 24 hours after they initiated their XEX Mint. If they claim later, they are subject to the decaying rewards on the XEX mint, but still receive the same additional rewards from RewardsPool.
+# Game Operations
 
-Example #2: The user begins a dungeon by paying gas for an XEX mint with a 1-day term date. They fail to complete the dungeon and die after playing for 10 minutes. The contract allows the user to claim 20% of their XEX mint in a single transaction, 24 hours after they initiated their XEX Mint. The remaining 80% of their mint will be sent to RewardsPool when the user calls the Claim transaction.
+# Object Info
+
+```solidity
+struct Dungeon {
+	string name; // The name of the dungeon
+	uint startIn; // The start time of the dungeon
+	uint endIn; // The end time of the dungeon
+	uint minTermDate; // The minimum term date of the dungeon
+	uint maxTermDate; // The maximum term date of the dungeon
+	uint minMintFee; // The minimum mint fee of the dungeon
+	uint failurePercentage; // The failure percentage of the dungeon
+	bool active; // The status of the dungeon
+	uint availableRewards; // The available rewards of the dungeon
+	uint claimedRewards; // The claimed rewards of the dungeon
+}
+```
+
+```solidity
+struct Session {
+	address user; // The address of the user
+	uint tokenId; // The token id of the user
+	uint feeDeposited; // The fee deposited by the user
+	uint rewardAmount; // the amount of reward the user will get if completed
+	bool gameCompleted; // the status of the game
+	uint dungeonId; // the dungeon id of the game
+	uint startedAt; // the time when the game started
+	uint endedAt; // the time when the game ended
+	uint claimAmount; // the amount of reward the user will got if completed
+	uint claimAt; // the time when the user can claim the reward
+	uint availableRewards; // not used
+	uint claimedRewards; // not used
+}
+```
+
+## Contract Functions
+
+`Game.getOnlyActiveDungeons()`
+return: uint[]
+
+Use to get the list of only active dungeons that can be used by the palyer to play games.
+
+`Game.getActiveSessions(uint dungeonId)`
+return: uint[]
+
+Use to get the list of active sessions for a given dungeon.
+Sessions are active gameplays going on for a given dungeon.
+
+`Game.getActiveSessionsByUser(address user)`
+return: uint[]
+
+Use to get the list of active sessions for a given user.
+It means the user is currently playing the game.
+
+`Game.getFinishedSessions(uint dungeonId)`
+return: uint[]
+
+Use to get the list of finished sessions for a given dungeon.
+Sessions are finished gameplays for a given dungeon.
+
+`Game.getFinishedSessionsByUser(address user)`
+return: uint[]
+
+Use to get the list of finished sessions for a given user.
+It means the user has finished playing the game.
+
+`Game.getDungeonInfo(uint dungeonId)`
+return: (struct Dungeon)
+
+Get information about an dungeon.
+See info Dungeon above.
+
+`Game.getSession(uint sessionId)`
+return: (struct Session)
+
+Get information about a game session.
+See info Session above.
+
+`Game.start(uint dungeonId)`
+
+Allow user to start a game session for a given dungeon.
+
+`Game.claim(uint sessionId)`
+
+Allow user to claim the nft and reward for a given session.
+
+After the game is finished.
+
+`Game.end(uint sessionId)`
+
+Allow admin to end a game session.
+
+# Admin Operations
+
+`Game.addReward(uint dungeonId, uint amount)`
+
+Used to add reward tokens to the contract.
+
+For testing purpose, the reward token is `Reward Token address` above.
+
+`Game.addDungeon(
+    string memory _name,
+    uint _startIn,
+    uint _endIn,
+    uint _minMintFee,
+    uint _minTermDate,
+    uint _maxTermDate,
+    uint _failurePercentage,
+    uint _rewardAmount)`
+
+Use to add a new dungeon to the contract.
+
+`Game.removeDungeon(uint dungeonId)`
+
+Use to remove/dsable an dungeon.
+
+`Game.setDungeonStatus(uint dungeonId, bool status)`
+Use to enable/disable a dungeon.
+
+`Game.setMinMintFee(uint dungeonId, uint minMintFee)`
+Use to set any ETH mint fee for a dungeon, used when user start the game.
+
+`Game.setRewardPercentage(uint dungeonId, uint failurePercentage)`
+
+Use to set the reward paid on the completion of the game for failed games.

@@ -14,7 +14,7 @@ contract NFT is ERC721, ERC721Enumerable, Ownable, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
     function contractURI() external view returns (string memory) {
-        return "https://NFT.xexlabs.com/contract.json";
+        return "https://xexgf.xexlabs.com/contract.json";
     }
     function setBaseURI(string memory _baseURI_) external onlyOwner {
         baseURI_ = _baseURI_;
@@ -22,8 +22,6 @@ contract NFT is ERC721, ERC721Enumerable, Ownable, AccessControl {
     function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721Enumerable, ERC721) returns (bool) {
         return interfaceId == type(AccessControl).interfaceId || super.supportsInterface(interfaceId);
     }
-
-
     function _update(
         address to, uint256 tokenId, address auth
     ) internal override(ERC721Enumerable, ERC721) returns (address) {
